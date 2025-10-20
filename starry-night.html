@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starry Night</title>
+    <style>
+        body {
+            background: #ffffff;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .audio-player {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .play-button {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .play-button:hover {
+            background: #555;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        p {
+            margin-bottom: 1em;
+        }
+
+        ol {
+            margin: 1em 0;
+            padding-left: 1.5em;
+        }
+
+        li {
+            margin-bottom: 0.8em;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .audio-player {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+
+            .play-button {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-player">
+        <audio id="bgMusic" loop>
+            <source src="趙雷 - 成都和我在成都的街頭走一走 直到所有的燈都熄滅了也不停留Lyrics Video.mp3" type="audio/mpeg">
+        </audio>
+        <button class="play-button" id="playButton">Play Music</button>
+    </div>
+
+    <h1>Starry Night</h1>
+
+    <p>Childhood goes by in a blur.</p>
+
+    <p>Most of my tween years have vanished into the hazy fog of forgetfulness. But there is one night I can't stop recalling.</p>
+
+    <p>I was jamming Pokémon White on the old Nintendo DSI, totally engrossed into that archaic little device. Until my mum told me to get a move on outside.</p>
+
+    <p>"It's Guy Fawke's Day"</p>
+
+    <p>Now I had – and still have – no idea who Guy Fawkes was. But like the filial and honourable son I was, I listened to her, and before I knew it, I was surrounded by people (family friends and relatives I presume) and standing in the middle of our suburb street.</p>
+
+    <p>We lit some of those little sparkly sticks that fire off streams of light! It was absolutely wonderful. Completely sublime. If there was any word to describe it, it would be: "Magic". Complete, pure, stunning magic.</p>
+
+    <p>Never had I ever felt more like a child. Now when I see one of those sparkly sticks, I light up with glee. My favourite fireworks are actually those golden ones that spread out in that golden dandelion shape. They burst in the same patterns the sticks sparkle.</p>
+
+    <p>I'm no longer a child. Responsibilities pile. There're people that count on me as much as I count on them.</p>
+
+    <p>But there's this unique sense of wonder we had as a child - when the world truly was a magical, wondrous place. When your imagination had no bounds. Where you could pretend your potatoes were potato knights and make them fight against the carrot nation.</p>
+
+    <p>And as cliché as this is going to sound, when my dad would drive me back from karate at night, I could never stop myself from looking upwards, and gazing at the stars.</p>
+
+    <p>They made me feel so miniscule.</p>
+
+    <p>Small, insignificant, and so terribly in awe.</p>
+
+    <p>For what a mysterious, terrifying, and wonderful world we live in.</p>
+
+    <p>There are three things I will still do when I'm eighty.</p>
+
+    <ol>
+        <li>I will squat. Leg strength, posterior chain strength, and bone density become ever more important with age. The loss of mobility as an elder is the first step to degradation.</li>
+
+        <li>I will spoil my grandchildren handsomely. And make them do a little mathematics.</li>
+
+        <li>I will absolutely, never, ever lose my sense of child-like splendour, awe, and curiosity for the world. Nothing is ever going to rip that away from me. You can try, but dare to fail.</li>
+    </ol>
+
+    <p>And every day will feel like gazing at the stars.</p>
+
+    <script>
+        const audio = document.getElementById('bgMusic');
+        const playButton = document.getElementById('playButton');
+        let isPlaying = false;
+
+        playButton.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                playButton.textContent = 'Play Music';
+            } else {
+                audio.play();
+                playButton.textContent = 'Pause Music';
+            }
+            isPlaying = !isPlaying;
+        });
+    </script>
+</body>
+</html>
