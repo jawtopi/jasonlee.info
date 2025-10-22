@@ -60,6 +60,16 @@
             margin-bottom: 0.8em;
         }
 
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 20px 15px;
@@ -79,6 +89,7 @@
     </style>
 </head>
 <body>
+    <canvas id="fireworksCanvas"></canvas>
     <div class="audio-player">
         <audio id="bgMusic" loop>
             <source src="趙雷 - 成都和我在成都的街頭走一走 直到所有的燈都熄滅了也不停留Lyrics Video.mp3" type="audio/mpeg">
@@ -131,15 +142,208 @@
         const playButton = document.getElementById('playButton');
         let isPlaying = false;
 
-        playButton.addEventListener('click', () => {
-            if (isPlaying) {
-                audio.pause();
-                playButton.textContent = 'Play Music';
+        // Fireworks Canvas Setup
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Firework Particle Class - Curved Streaking Style
+        class Particle {
+            constructor(x, y, angle) {
+                this.centerX = x;  // Keep burst center fixed
+                this.centerY = y;
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+
+                // Faster initial speed for longer streaks
+                const speed = Math.random() * 3 + 6;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+
+                this.alpha = 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.012 + 0.008;
+
+                // Stronger gravity for realistic arcing
+                this.gravity = 0.2;
+                this.friction = 0.97;
+
+                this.lineWidth = Math.random() * 1.5 + 1;
+
+                // Track position history for curved path
+                this.trail = [];
+            }
+
+            update() {
+                // Store position history
+                this.trail.push({ x: this.x, y: this.y });
+
+                // Apply physics for realistic curving
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.life -= this.decay;
+                this.alpha = Math.max(0, this.life);
+            }
+
+            draw() {
+                if (this.life <= 0 || this.trail.length === 0) return;
+
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                // Draw curved path from center through all trail points
+                const fullPath = [{ x: this.centerX, y: this.centerY }, ...this.trail, { x: this.x, y: this.y }];
+
+                for (let i = 0; i < fullPath.length - 1; i++) {
+                    const point = fullPath[i];
+                    const nextPoint = fullPath[i + 1];
+
+                    // Calculate color based on position along the streak
+                    const colorProgress = i / fullPath.length;
+                    let r, g, b;
+
+                    if (colorProgress < 0.2) {
+                        // Hot white core at center
+                        r = 255;
+                        g = 255;
+                        b = 220;
+                    } else if (colorProgress < 0.5) {
+                        // Transition to bright gold
+                        const t = (colorProgress - 0.2) / 0.3;
+                        r = 255;
+                        g = Math.floor(255 - (35 * t));
+                        b = Math.floor(220 - (120 * t));
+                    } else {
+                        // Fade to orange at tip
+                        const t = (colorProgress - 0.5) / 0.5;
+                        r = 255;
+                        g = Math.floor(220 - (80 * t));
+                        b = Math.floor(100 - (100 * t));
+                    }
+
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${this.alpha})`;
+                    ctx.lineWidth = this.lineWidth * (1 - colorProgress * 0.3);
+
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(nextPoint.x, nextPoint.y);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Firework Class
+        class Firework {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.particles = [];
+                this.createParticles();
+            }
+
+            createParticles() {
+                // Create many streaks radiating out evenly
+                const particleCount = Math.random() * 30 + 50;
+                for (let i = 0; i < particleCount; i++) {
+                    // Evenly distributed angles with some randomness
+                    const angle = (Math.PI * 2 * i / particleCount) + (Math.random() - 0.5) * 0.3;
+                    this.particles.push(new Particle(this.x, this.y, angle));
+                }
+            }
+
+            update() {
+                this.particles.forEach(particle => particle.update());
+                this.particles = this.particles.filter(particle => particle.alpha > 0);
+            }
+
+            draw() {
+                this.particles.forEach(particle => particle.draw());
+            }
+
+            isDone() {
+                return this.particles.length === 0;
+            }
+        }
+
+        let fireworks = [];
+        let animationId = null;
+
+        function animate() {
+            // Use clearRect instead of semi-transparent black overlay
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            fireworks.forEach((firework, index) => {
+                firework.update();
+                firework.draw();
+                if (firework.isDone()) {
+                    fireworks.splice(index, 1);
+                }
+            });
+
+            if (fireworks.length > 0 || isPlaying) {
+                animationId = requestAnimationFrame(animate);
             } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                animationId = null;
+            }
+        }
+
+        function launchFirework() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height * 0.6; // Upper 60% of screen
+            fireworks.push(new Firework(x, y));
+        }
+
+        let fireworkInterval = null;
+
+        playButton.addEventListener('click', () => {
+            if (!isPlaying) {
                 audio.play();
                 playButton.textContent = 'Pause Music';
+                isPlaying = true;
+
+                // Launch initial burst of fireworks (reduced to 2)
+                for (let i = 0; i < 2; i++) {
+                    setTimeout(() => launchFirework(), i * 300);
+                }
+
+                // Continue launching fireworks periodically (less frequent)
+                fireworkInterval = setInterval(() => {
+                    if (Math.random() > 0.7) { // 30% chance each interval
+                        launchFirework();
+                    }
+                }, 3500);
+
+                // Start animation if not already running
+                if (!animationId) {
+                    animate();
+                }
+            } else {
+                audio.pause();
+                playButton.textContent = 'Play Music';
+                isPlaying = false;
+
+                // Stop launching new fireworks
+                if (fireworkInterval) {
+                    clearInterval(fireworkInterval);
+                    fireworkInterval = null;
+                }
             }
-            isPlaying = !isPlaying;
         });
     </script>
 </body>
